@@ -1,0 +1,44 @@
+const express = require('express');
+const router = express.Router();
+const prisma = require('../db');
+const { authenticateToken } = require('../middlewares/auth');
+
+// GET /api/users/me -> get user profile & limits
+router.get('/me', authenticateToken, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ 
+      where: { id: req.user.id },
+      select: {
+        id: true,
+        email: true,
+        planType: true,
+        dailyUsage: true,
+        monthlyUsage: true,
+        lastResetDate: true,
+        createdAt: true
+      }
+    });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
+// POST /api/users/upgrade -> Mock upgrade subscription
+router.post('/upgrade', authenticateToken, async (req, res) => {
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { planType: 'paid', monthlyUsage: 0, lastResetDate: new Date() },
+      select: { id: true, email: true, planType: true }
+    });
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Upgrade error:', error);
+    res.status(500).json({ error: 'Failed to upgrade plan' });
+  }
+});
+
+module.exports = router;

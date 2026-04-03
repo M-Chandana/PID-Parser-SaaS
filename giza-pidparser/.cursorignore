@@ -1,0 +1,24 @@
+# Ignore all model .pt files
+*.pt
+
+# Ignore all image files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.webp
+
+# Ignore data dump files
+*.pdf
+*.csv
+*.xlsx
+*.xls
+*.db
+*.sqlite
+*.tar
+*.zip
+*.rar
+*.7z
+

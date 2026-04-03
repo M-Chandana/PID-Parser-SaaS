@@ -1,0 +1,127 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 1000px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "red", "id": "outlet1", "label": "outlet1", "shape": "dot", "size": 10, "title": "outlet1"}, {"color": "gray", "id": "column1", "label": "column1", "shape": "dot", "size": 10, "title": "column1"}, {"color": "blue", "id": "inlet1", "label": "inlet1", "shape": "dot", "size": 10, "title": "inlet1"}, {"color": "red", "id": "outlet2", "label": "outlet2", "shape": "dot", "size": 10, "title": "outlet2"}, {"color": "gray", "id": "column2", "label": "column2", "shape": "dot", "size": 10, "title": "column2"}, {"color": "blue", "id": "inlet2", "label": "inlet2", "shape": "dot", "size": 10, "title": "inlet2"}, {"color": "gray", "id": "instrument1", "label": "instrument1", "shape": "dot", "size": 10, "title": "instrument1"}, {"color": "gray", "id": "pit1", "label": "pit1", "shape": "dot", "size": 10, "title": "pit1"}, {"color": "gray", "id": "pit2", "label": "pit2", "shape": "dot", "size": 10, "title": "pit2"}, {"color": "gray", "id": "tag1", "label": "tag1", "shape": "dot", "size": 10, "title": "tag1"}, {"color": "gray", "id": "tag2", "label": "tag2", "shape": "dot", "size": 10, "title": "tag2"}, {"color": "gray", "id": "tag3", "label": "tag3", "shape": "dot", "size": 10, "title": "tag3"}, {"color": "gray", "id": "cs1", "label": "cs1", "shape": "dot", "size": 10, "title": "cs1"}, {"color": "gray", "id": "tag4", "label": "tag4", "shape": "dot", "size": 10, "title": "tag4"}, {"color": "gray", "id": "tag5", "label": "tag5", "shape": "dot", "size": 10, "title": "tag5"}, {"color": "gray", "id": "tag6", "label": "tag6", "shape": "dot", "size": 10, "title": "tag6"}, {"color": "gray", "id": "tag7", "label": "tag7", "shape": "dot", "size": 10, "title": "tag7"}, {"color": "gray", "id": "tag8", "label": "tag8", "shape": "dot", "size": 10, "title": "tag8"}, {"color": "gray", "id": "tag9", "label": "tag9", "shape": "dot", "size": 10, "title": "tag9"}, {"color": "gray", "id": "tag10", "label": "tag10", "shape": "dot", "size": 10, "title": "tag10"}, {"color": "gray", "id": "tag11", "label": "tag11", "shape": "dot", "size": 10, "title": "tag11"}, {"color": "gray", "id": "tag12", "label": "tag12", "shape": "dot", "size": 10, "title": "tag12"}, {"color": "gray", "id": "tag13", "label": "tag13", "shape": "dot", "size": 10, "title": "tag13"}, {"color": "gray", "id": "tag14", "label": "tag14", "shape": "dot", "size": 10, "title": "tag14"}, {"color": "gray", "id": "tag15", "label": "tag15", "shape": "dot", "size": 10, "title": "tag15"}, {"color": "gray", "id": "tag16", "label": "tag16", "shape": "dot", "size": 10, "title": "tag16"}, {"color": "gray", "id": "tag17", "label": "tag17", "shape": "dot", "size": 10, "title": "tag17"}, {"color": "gray", "id": "tag18", "label": "tag18", "shape": "dot", "size": 10, "title": "tag18"}, {"color": "gray", "id": "tag19", "label": "tag19", "shape": "dot", "size": 10, "title": "tag19"}, {"color": "gray", "id": "tag20", "label": "tag20", "shape": "dot", "size": 10, "title": "tag20"}, {"color": "gray", "id": "tag21", "label": "tag21", "shape": "dot", "size": 10, "title": "tag21"}, {"color": "gray", "id": "tag22", "label": "tag22", "shape": "dot", "size": 10, "title": "tag22"}, {"color": "gray", "id": "tag23", "label": "tag23", "shape": "dot", "size": 10, "title": "tag23"}, {"color": "gray", "id": "tag24", "label": "tag24", "shape": "dot", "size": 10, "title": "tag24"}, {"color": "gray", "id": "tag25", "label": "tag25", "shape": "dot", "size": 10, "title": "tag25"}, {"color": "gray", "id": "tag26", "label": "tag26", "shape": "dot", "size": 10, "title": "tag26"}, {"color": "gray", "id": "tag27", "label": "tag27", "shape": "dot", "size": 10, "title": "tag27"}, {"color": "gray", "id": "tag28", "label": "tag28", "shape": "dot", "size": 10, "title": "tag28"}, {"color": "gray", "id": "tag29", "label": "tag29", "shape": "dot", "size": 10, "title": "tag29"}, {"color": "gray", "id": "tag30", "label": "tag30", "shape": "dot", "size": 10, "title": "tag30"}, {"color": "gray", "id": "tag31", "label": "tag31", "shape": "dot", "size": 10, "title": "tag31"}, {"color": "gray", "id": "tag32", "label": "tag32", "shape": "dot", "size": 10, "title": "tag32"}, {"color": "gray", "id": "tag33", "label": "tag33", "shape": "dot", "size": 10, "title": "tag33"}, {"color": "gray", "id": "tag34", "label": "tag34", "shape": "dot", "size": 10, "title": "tag34"}, {"color": "gray", "id": "lmi1", "label": "lmi1", "shape": "dot", "size": 10, "title": "lmi1"}, {"color": "gray", "id": "lmi2", "label": "lmi2", "shape": "dot", "size": 10, "title": "lmi2"}, {"color": "gray", "id": "lmi3", "label": "lmi3", "shape": "dot", "size": 10, "title": "lmi3"}, {"color": "gray", "id": "lmi4", "label": "lmi4", "shape": "dot", "size": 10, "title": "lmi4"}, {"color": "gray", "id": "lmi5", "label": "lmi5", "shape": "dot", "size": 10, "title": "lmi5"}, {"color": "gray", "id": "cs2", "label": "cs2", "shape": "dot", "size": 10, "title": "cs2"}, {"color": "gray", "id": "interlock1", "label": "interlock1", "shape": "dot", "size": 10, "title": "interlock1"}, {"color": "gray", "id": "lmi6", "label": "lmi6", "shape": "dot", "size": 10, "title": "lmi6"}, {"color": "gray", "id": "lmi7", "label": "lmi7", "shape": "dot", "size": 10, "title": "lmi7"}, {"color": "gray", "id": "lmi8", "label": "lmi8", "shape": "dot", "size": 10, "title": "lmi8"}, {"color": "gray", "id": "lmi9", "label": "lmi9", "shape": "dot", "size": 10, "title": "lmi9"}, {"color": "gray", "id": "tag35", "label": "tag35", "shape": "dot", "size": 10, "title": "tag35"}, {"color": "gray", "id": "lmi10", "label": "lmi10", "shape": "dot", "size": 10, "title": "lmi10"}, {"color": "gray", "id": "lmi11", "label": "lmi11", "shape": "dot", "size": 10, "title": "lmi11"}, {"color": "gray", "id": "lmi12", "label": "lmi12", "shape": "dot", "size": 10, "title": "lmi12"}, {"color": "gray", "id": "lmi13", "label": "lmi13", "shape": "dot", "size": 10, "title": "lmi13"}, {"color": "gray", "id": "lmi14", "label": "lmi14", "shape": "dot", "size": 10, "title": "lmi14"}, {"color": "gray", "id": "lmi15", "label": "lmi15", "shape": "dot", "size": 10, "title": "lmi15"}, {"color": "gray", "id": "tag36", "label": "tag36", "shape": "dot", "size": 10, "title": "tag36"}, {"color": "gray", "id": "lmi16", "label": "lmi16", "shape": "dot", "size": 10, "title": "lmi16"}, {"color": "gray", "id": "interlock2", "label": "interlock2", "shape": "dot", "size": 10, "title": "interlock2"}, {"color": "gray", "id": "interlock3", "label": "interlock3", "shape": "dot", "size": 10, "title": "interlock3"}, {"color": "gray", "id": "component1", "label": "component1", "shape": "dot", "size": 10, "title": "component1"}, {"color": "gray", "id": "component2", "label": "component2", "shape": "dot", "size": 10, "title": "component2"}, {"color": "gray", "id": "lmi17", "label": "lmi17", "shape": "dot", "size": 10, "title": "lmi17"}, {"color": "green", "id": "valve1", "label": "valve1", "shape": "dot", "size": 10, "title": "valve1"}, {"color": "green", "id": "valve2", "label": "valve2", "shape": "dot", "size": 10, "title": "valve2"}, {"color": "green", "id": "valve3", "label": "valve3", "shape": "dot", "size": 10, "title": "valve3"}, {"color": "green", "id": "valve4", "label": "valve4", "shape": "dot", "size": 10, "title": "valve4"}, {"color": "green", "id": "valve5", "label": "valve5", "shape": "dot", "size": 10, "title": "valve5"}, {"color": "green", "id": "valve6", "label": "valve6", "shape": "dot", "size": 10, "title": "valve6"}, {"color": "green", "id": "valve7", "label": "valve7", "shape": "dot", "size": 10, "title": "valve7"}, {"color": "green", "id": "valve8", "label": "valve8", "shape": "dot", "size": 10, "title": "valve8"}, {"color": "gray", "id": "reducer1", "label": "reducer1", "shape": "dot", "size": 10, "title": "reducer1"}, {"color": "green", "id": "valve9", "label": "valve9", "shape": "dot", "size": 10, "title": "valve9"}, {"color": "green", "id": "valve10", "label": "valve10", "shape": "dot", "size": 10, "title": "valve10"}, {"color": "green", "id": "valve11", "label": "valve11", "shape": "dot", "size": 10, "title": "valve11"}, {"color": "gray", "id": "reducer2", "label": "reducer2", "shape": "dot", "size": 10, "title": "reducer2"}, {"color": "green", "id": "valve12", "label": "valve12", "shape": "dot", "size": 10, "title": "valve12"}, {"color": "gray", "id": "reducer3", "label": "reducer3", "shape": "dot", "size": 10, "title": "reducer3"}, {"color": "green", "id": "valve13", "label": "valve13", "shape": "dot", "size": 10, "title": "valve13"}]);
+                  edges = new vis.DataSet([{"from": "outlet1", "to": "column1"}, {"from": "outlet1", "to": "valve1"}, {"from": "outlet1", "to": "lmi6"}, {"from": "outlet1", "to": "inlet1"}, {"from": "column1", "to": "inlet2"}, {"from": "column1", "to": "inlet1"}, {"from": "column1", "to": "valve7"}, {"from": "column1", "to": "valve4"}, {"from": "column1", "to": "lmi9"}, {"from": "column1", "to": "pit1"}, {"from": "column1", "to": "valve1"}, {"from": "column1", "to": "lmi6"}, {"from": "column1", "to": "outlet2"}, {"from": "column1", "to": "valve2"}, {"from": "column1", "to": "lmi1"}, {"from": "column1", "to": "valve13"}, {"from": "column1", "to": "lmi3"}, {"from": "column1", "to": "lmi12"}, {"from": "column1", "to": "lmi4"}, {"from": "column1", "to": "column2"}, {"from": "column1", "to": "lmi8"}, {"from": "column1", "to": "lmi16"}, {"from": "column1", "to": "valve8"}, {"from": "column1", "to": "lmi5"}, {"from": "column1", "to": "lmi10"}, {"from": "column1", "to": "reducer2"}, {"from": "inlet1", "to": "valve1"}, {"from": "inlet1", "to": "lmi6"}, {"from": "inlet1", "to": "valve7"}, {"from": "inlet1", "to": "valve4"}, {"from": "inlet1", "to": "lmi9"}, {"from": "inlet1", "to": "inlet2"}, {"from": "column2", "to": "lmi5"}, {"from": "column2", "to": "reducer2"}, {"from": "inlet2", "to": "pit1"}, {"from": "instrument1", "to": "lmi14"}, {"from": "instrument1", "to": "valve5"}, {"from": "instrument1", "to": "component2"}, {"from": "instrument1", "to": "pit2"}, {"from": "instrument1", "to": "valve3"}, {"from": "instrument1", "to": "valve7"}, {"from": "instrument1", "to": "cs2"}, {"from": "instrument1", "to": "valve12"}, {"from": "pit2", "to": "valve5"}, {"from": "pit2", "to": "valve12"}, {"from": "tag1", "to": "tag24"}, {"from": "cs1", "to": "valve4"}, {"from": "tag4", "to": "tag29"}, {"from": "tag5", "to": "tag7"}, {"from": "tag5", "to": "tag16"}, {"from": "tag6", "to": "tag11"}, {"from": "tag9", "to": "lmi17"}, {"from": "tag10", "to": "tag13"}, {"from": "tag10", "to": "tag19"}, {"from": "tag11", "to": "tag19"}, {"from": "tag12", "to": "tag17"}, {"from": "tag12", "to": "interlock1"}, {"from": "tag15", "to": "tag27"}, {"from": "tag15", "to": "lmi15"}, {"from": "tag16", "to": "tag34"}, {"from": "tag17", "to": "tag35"}, {"from": "tag17", "to": "tag20"}, {"from": "tag18", "to": "tag30"}, {"from": "tag18", "to": "tag20"}, {"from": "tag18", "to": "tag21"}, {"from": "tag21", "to": "interlock3"}, {"from": "tag21", "to": "tag30"}, {"from": "tag22", "to": "tag31"}, {"from": "tag25", "to": "tag36"}, {"from": "tag27", "to": "lmi15"}, {"from": "tag27", "to": "component1"}, {"from": "tag28", "to": "lmi13"}, {"from": "tag29", "to": "tag33"}, {"from": "tag31", "to": "tag32"}, {"from": "tag32", "to": "tag33"}, {"from": "lmi1", "to": "valve1"}, {"from": "lmi2", "to": "valve1"}, {"from": "lmi2", "to": "lmi6"}, {"from": "cs2", "to": "lmi9"}, {"from": "cs2", "to": "lmi14"}, {"from": "cs2", "to": "valve3"}, {"from": "cs2", "to": "valve7"}, {"from": "lmi6", "to": "valve7"}, {"from": "lmi6", "to": "valve4"}, {"from": "lmi6", "to": "valve1"}, {"from": "lmi7", "to": "lmi17"}, {"from": "lmi9", "to": "valve1"}, {"from": "lmi9", "to": "lmi14"}, {"from": "lmi10", "to": "valve13"}, {"from": "lmi11", "to": "valve2"}, {"from": "lmi12", "to": "valve6"}, {"from": "lmi14", "to": "component2"}, {"from": "lmi15", "to": "valve12"}, {"from": "lmi15", "to": "component2"}, {"from": "interlock2", "to": "interlock3"}, {"from": "component1", "to": "lmi17"}, {"from": "component2", "to": "valve3"}, {"from": "component2", "to": "valve12"}, {"from": "valve1", "to": "reducer3"}, {"from": "valve3", "to": "valve7"}, {"from": "valve4", "to": "valve11"}, {"from": "valve6", "to": "valve10"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"nodes": {"shape": "dot", "size": 15, "font": {"size": 14}}, "edges": {"smooth": {"type": "continuous"}}, "physics": {"enabled": true}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

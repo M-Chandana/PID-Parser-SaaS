@@ -1,0 +1,509 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid" style="margin-top:50px; background-color: #f2f2f2;">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h3 class="text-primary">P & ID Parser</h3>
+            <h4 class="text-secondary">Select an option to view the image</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Heading for Detected Components -->
+            <h5 class="text-secondary">Detected Components</h5>
+
+            <!-- Original Image Button -->
+            <button type="button" class="btn btn-primary mb-3" onclick="displayOriginalImage()">Original</button>
+            
+            <!-- Checkboxes for Model Options -->
+            <form id="image_form">
+                <div class="form-group">
+                    <input type="checkbox" id="model_one" name="image_option" class="custom-checkbox" data-color="red">
+                    <label for="model_one">Vessels and instruments</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" id="model_two" name="image_option" class="custom-checkbox" data-color="blue">
+                    <label for="model_two">LMIs and Tags</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" id="model_three" name="image_option" class="custom-checkbox" data-color="green">
+                    <label for="model_three">Valves and components</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" id="model_four" name="image_option" class="custom-checkbox" data-color="brown">
+                    <label for="model_four">Lines</label>
+                </div>
+            </form>
+            
+            <!-- Show Selected Button -->
+            <div class="mt-3">
+                <button type="button" class="btn btn-primary" id="show_selected_btn" onclick="displaySelectedImages()">Show Selected</button>
+                <hr style="margin: 20px 0;">
+
+                <!-- Heading for Generated Graphs -->
+                <h5 class="text-secondary">Generated Graphs</h5>
+                
+                <!-- Graph Options -->
+                <form id="graph_form">
+                    <div class="form-group">
+                        <input type="radio" id="interactive_graph_option" name="graph_option" value="interactive" onchange="navigateToGraph()">
+                        <label for="interactive_graph_option">Interactive Graph</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="radio" id="embedded_graph_option" name="graph_option" value="embedded" onchange="displayEmbeddedGraph()">
+                        <label for="embedded_graph_option">Embedded Graph</label>
+                    </div>
+                </form>
+                
+                <hr style="margin: 20px 0;">
+                <button type="button" class="btn btn-success" onclick="downloadCSV()">Download Component Positions CSV</button>
+                <button type="button" class="btn btn-success mt-2" onclick="downloadComponentConnectionsCSV()">Download Component Connections CSV</button>
+            </div>
+        </div>
+        <div class="col-md-8" id="image_container" style="position: relative; cursor: grab;">
+            <canvas id="image_canvas" style="max-width: 100%; height: auto; position: relative;"></canvas>
+            
+            
+            <!-- Control Buttons for Zoom and Pan -->
+            <div class="control-buttons">
+                <button class="btn btn-secondary control-button" onclick="zoomIn()" title="Zoom In">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="btn btn-secondary control-button" onclick="zoomOut()" title="Zoom Out">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button class="btn btn-secondary control-button" onclick="panLeft()" title="Pan Left">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="btn btn-secondary control-button" onclick="panRight()" title="Pan Right">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button class="btn btn-secondary control-button" onclick="panUp()" title="Pan Up">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+                <button class="btn btn-secondary control-button" onclick="panDown()" title="Pan Down">
+                    <i class="fas fa-arrow-down"></i>
+                </button>
+                <button class="btn btn-secondary control-button" onclick="resetZoom()" title="Reset">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="btn btn-secondary control-button" onclick="toggleFullScreen()" title="Full Screen">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+            <iframe id="graph_iframe" style="width: 100%; height: 500px; border: none; display: none;"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- Styles for the Control Buttons -->
+<style>
+    .control-buttons {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .control-button {
+        margin-bottom: 5px;
+        font-size: 18px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .custom-checkbox {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        width: 0;
+        height: 0;
+    }
+
+    .custom-checkbox + label {
+        position: relative;
+        padding-left: 30px;
+        line-height: 20px;
+        display: inline-block;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .custom-checkbox + label:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 20px;
+        height: 20px;
+        background-color: transparent;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .custom-checkbox:checked + label:before {
+        background-color: currentColor;
+        border-color: transparent;
+    }
+
+    .custom-checkbox[data-color="blue"]:checked + label {
+        color: blue;
+    }
+
+    .custom-checkbox[data-color="red"]:checked + label {
+        color: red;
+    }
+
+    .custom-checkbox[data-color="green"]:checked + label {
+        color: green;
+    }
+
+    .custom-checkbox[data-color="brown"]:checked + label {
+        color: brown;
+    }
+</style>
+
+<!-- Script -->
+"""<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+<script>
+    const originalImageUrl = "{% static 'input.jpg' %}?{{ image_version }}";
+    const overlayImageUrls = {
+        'model_one': "{% static 'result_one.png' %}?{{ image_version }}",
+        'model_two': "{% static 'result_two.png' %}?{{ image_version }}",
+        'model_three': "{% static 'result_three.png' %}?{{ image_version }}",
+        'model_four': "{% static 'result_four.png' %}?{{ image_version }}"
+    };
+
+    const canvas = document.getElementById('image_canvas');
+    const ctx = canvas.getContext('2d');
+    let scale = 1;
+    let startX, startY, isDragging = false;
+    let imgOffsetX = 0, imgOffsetY = 0;
+    let imgWidth, imgHeight;
+    let originalImg = new Image();
+    let overlays = {};
+    const controlButtons = document.querySelector('.control-buttons'); 
+
+    function toggleControlButtons(show) {
+        if (show) {
+            controlButtons.style.display = 'flex';
+        } else {
+            controlButtons.style.display = 'none';
+        }
+    }
+
+    function loadImage(src, onLoad) {
+        let img = new Image();
+        img.src = src + '&_=' + new Date().getTime();
+        img.onload = () => onLoad(img);
+        return img;
+    }
+
+    function displayOriginalImage() {
+        // Hide the graph iframe and show the canvas
+        toggleControlButtons(true);
+        document.getElementById('graph_iframe').style.display = 'none';
+        document.getElementById('image_canvas').style.display = 'block';
+
+        // Clear overlays and reset image options
+        overlays = {};  // Clear all overlays
+        document.querySelectorAll('input[name="image_option"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('input[name="graph_option"]').forEach(radio => radio.checked = false); // Uncheck all radio buttons
+
+        // Create a new Image object for the original image
+        originalImg = new Image();
+
+        // Load the original image with cache busting (new timestamp)
+        originalImg.src = originalImageUrl + '&_=' + new Date().getTime();
+        
+        // Reset the canvas properties
+        imgOffsetX = 0; // Reset panning offsets
+        imgOffsetY = 0;
+        scale = 1; // Reset zoom level
+
+        // Once the image is loaded, set canvas dimensions and redraw
+        originalImg.onload = () => {
+            imgWidth = originalImg.width;
+            imgHeight = originalImg.height;
+            canvas.width = imgWidth;
+            canvas.height = imgHeight;
+            redrawCanvas(); // Redraw the canvas with the original image
+        };
+            
+    }
+
+    function displaySelectedImages() {
+        const checkboxes = document.querySelectorAll('input[name="image_option"]:checked');
+        overlays = {}; // Clear previous overlays
+    
+        // Check if the original image is already loaded or not
+        if (!originalImg) {
+            // Load the original image if not loaded yet
+            imgOffsetX = 0; // Reset pan offsets
+            imgOffsetY = 0;
+            scale = 1; // Reset zoom
+            originalImg = loadImage(originalImageUrl, (img) => {
+            imgWidth = img.width;
+            imgHeight = img.height;
+            canvas.width = imgWidth;
+            canvas.height = imgHeight;
+                
+    
+                // Once the original image is loaded, display overlays
+            loadOverlays(checkboxes);
+            });
+        } else {
+            // If original image is already loaded, directly load overlays
+            imgOffsetX = 0; // Reset pan offsets
+            imgOffsetY = 0;
+            scale = 1; // 
+            loadOverlays(checkboxes);
+        }
+    
+        // Show the canvas and hide the graph iframe if needed
+        canvas.style.display = 'block';
+        document.getElementById('graph_iframe').style.display = 'none';
+    }
+    
+    // Helper function to load overlays and redraw the canvas
+    function loadOverlays(checkboxes) {
+        checkboxes.forEach((checkbox) => {
+            let overlayImgUrl = overlayImageUrls[checkbox.id];
+            if (overlayImgUrl) {
+                overlays[checkbox.id] = loadImage(overlayImgUrl, () => {
+                    redrawCanvas(); // Redraw canvas after each overlay is loaded
+                });
+            }
+        });
+    }
+    
+    
+    function zoomIn() {
+        scale *= 1.3;
+        if (scale > 5) scale = 5; // Max zoom level
+        restrictPan();
+        redrawCanvas();
+    }
+
+    function zoomOut() {
+        scale /= 1.3;
+        if (scale < 1) scale = 1; // Min zoom level
+        restrictPan();
+        redrawCanvas();
+    }
+
+    let panStep = 500; // Base panning step
+    function panLeft() { startPan('left'); }
+    function panRight() { startPan('right'); }
+    function panUp() { startPan('up'); }
+    function panDown() { startPan('down'); }
+
+
+    function panLeft() {
+        imgOffsetX -= panStep * scale; // Adjust panning step based on zoom level
+        redrawCanvas();
+    }
+    
+    function panRight() {
+        imgOffsetX += panStep * scale;
+        redrawCanvas();
+    }
+    
+    function panUp() {
+        imgOffsetY -= panStep * scale;
+        redrawCanvas();
+    }
+    
+    function panDown() {
+        imgOffsetY += panStep * scale;
+        redrawCanvas();
+    }
+    
+    // Optional: Smooth transition for panning
+    let targetOffsetX = imgOffsetX;
+    let targetOffsetY = imgOffsetY;
+    let panAnimationFrame;
+    
+    function smoothPan() {
+        imgOffsetX += (targetOffsetX - imgOffsetX) * 0.1; // Smoothly interpolate towards the target
+        imgOffsetY += (targetOffsetY - imgOffsetY) * 0.1;
+        
+        redrawCanvas();
+        
+        if (Math.abs(targetOffsetX - imgOffsetX) > 0.1 || Math.abs(targetOffsetY - imgOffsetY) > 0.1) {
+            panAnimationFrame = requestAnimationFrame(smoothPan);
+        } else {
+            cancelAnimationFrame(panAnimationFrame);
+        }
+    }
+    
+    // Call smoothPan when initiating a pan
+    function startPan(direction) {
+        switch (direction) {
+            case 'left':
+                targetOffsetX = imgOffsetX - panStep * scale;
+                break;
+            case 'right':
+                targetOffsetX = imgOffsetX + panStep * scale;
+                break;
+            case 'up':
+                targetOffsetY = imgOffsetY - panStep * scale;
+                break;
+            case 'down':
+                targetOffsetY = imgOffsetY + panStep * scale;
+                break;
+        }
+        smoothPan();
+    }
+    
+
+    function resetZoom() {
+        scale = 1;
+        imgOffsetX = 0;
+        imgOffsetY = 0;
+        redrawCanvas();
+    }
+    canvas.addEventListener('mousedown', (e) => {
+        startX = e.offsetX - imgOffsetX;
+        startY = e.offsetY - imgOffsetY;
+        isDragging = true;
+        canvas.style.cursor = "grabbing";
+    });
+
+    canvas.addEventListener('mouseup', () => {
+        isDragging = false;
+        canvas.style.cursor = "grab";
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            imgOffsetX = (e.offsetX - startX);
+            imgOffsetY = (e.offsetY - startY);
+            redrawCanvas();
+        }
+    });
+    canvas.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+            zoomIn();
+        } else {
+            zoomOut();
+        }
+    });
+
+    function redrawCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Apply transformations for zoom and pan
+        ctx.save();
+        ctx.translate(imgOffsetX, imgOffsetY);
+        ctx.scale(scale, scale);
+    
+        // Draw original image or embedded graph image based on availability
+        if (overlays['embedded_graph']) {
+            ctx.drawImage(overlays['embedded_graph'], 0, 0);
+        } else {
+            ctx.drawImage(originalImg, 0, 0);
+        }
+        if (originalImg.complete) {
+            ctx.drawImage(originalImg, 0, 0);
+        }
+
+        for (const key in overlays) {
+            if (overlays[key].complete) {
+                ctx.drawImage(overlays[key], 0, 0);
+            }
+        }
+
+        ctx.restore();
+
+    
+        ctx.restore();
+    }
+
+    function restrictPan() {
+         // Calculate the maximum and minimum allowable offsets
+        const scaledImgWidth = imgWidth * scale;
+        const scaledImgHeight = imgHeight * scale;
+
+        // Max offsets to keep the image centered
+        const maxOffsetX = (canvas.width - scaledImgWidth) / 2;
+        const maxOffsetY = (canvas.height - scaledImgHeight) / 2;
+
+        // Restrict imgOffsetX and imgOffsetY to ensure they do not go beyond image boundaries
+        imgOffsetX = Math.min(Math.max(imgOffsetX, maxOffsetX), canvas.width - maxOffsetX - scaledImgWidth);
+        imgOffsetY = Math.min(Math.max(imgOffsetY, maxOffsetY), canvas.height - maxOffsetY - scaledImgHeight);
+        
+    }
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.getElementById('image_container').requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    }
+    
+     
+
+    function navigateToGraph() {
+        
+        document.getElementById('image_canvas').style.display = 'none';
+        document.getElementById('graph_iframe').style.display = 'block';
+        const graphUrl = "{% static 'g.html' %}" + "?t=" + new Date().getTime();
+        document.getElementById('graph_iframe').src = graphUrl;
+        toggleControlButtons(false);
+         
+
+    }
+
+    function displayEmbeddedGraph() {
+        toggleControlButtons(true);
+        imgOffsetX = 0;
+        imgOffsetY = 0;
+        scale = 1;
+        
+        // Load the embedded graph image
+        const graphImgUrl = "{% static 'embedded_graph.png' %}?t=" + new Date().getTime();
+        overlays['embedded_graph'] = loadImage(graphImgUrl, () => {
+            imgWidth = overlays['embedded_graph'].width;
+            imgHeight = overlays['embedded_graph'].height;
+            canvas.width = imgWidth;
+            canvas.height = imgHeight;
+            redrawCanvas();
+        });
+    
+        // Clear any interactive graph content
+        document.getElementById('graph_iframe').style.display = 'none';
+        document.getElementById('image_canvas').style.display = 'block';
+
+
+    }
+
+    function downloadCSV() {
+        const link = document.createElement('a');
+        link.href = "{% static 'output.csv' %}";
+        link.download = 'output.csv';
+        link.click();
+
+    }
+
+    function downloadComponentConnectionsCSV() {
+        const link = document.createElement('a');
+        link.href = "{% static 'component_connections.csv' %}";
+        link.download = 'component_connections.csv';
+        link.click();
+
+    }
+
+    window.onload = () => {
+        displayOriginalImage();
+        toggleControlButtons(true); // Show control buttons by default
+    };
+ // Display the original image by default on page load
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+# Ignore data dump files
+*.pdf
+*.csv
+*.xlsx
+*.xls
+*.db
+# *.sqlite
+*.tar
+*.zip
+*.rar
+*.7z
+
+# Existing .gitignore entry
+*.ini
+
+# Specifically ignore input.jpg in any directory
+**/input.jpg
+
+# Specifically ignore model output images
+**/model_one.png
+**/model_two.png
+**/model_three.png
+**/model_four.png
+
+# Specifically ignore result images
+**/result_one.png
+**/result_two.png
+**/result_three.png
+**/result_four.png

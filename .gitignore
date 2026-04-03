@@ -8,6 +8,18 @@ venv/
 # AI Service Artifacts
 ai-service/artifacts/*
 !ai-service/artifacts/.gitkeep
+ai-service/app/static/*.png
+ai-service/app/static/*.csv
+ai-service/test_pid.png
+pid_parser/
+
+# Node
+node_modules/
+backend-service/node_modules/
+
+# Zip/Unzipped
+*.zip
+giza-pidparser-unzipped/
 
 # OS
 .DS_Store

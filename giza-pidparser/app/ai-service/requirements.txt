@@ -1,0 +1,13 @@
+pdf2image
+pymupdf
+pillow
+numpy
+opencv-python
+ultralytics
+pandas
+scikit-image
+easyocr
+networkx
+matplotlib
+pyvis
+django

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid" style="margin-top: 50px; background-color: #e0e0e0;">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1 class="display-4 text-primary">About Models</h1>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 30px;">
+        <div class="col-md-10 offset-md-1" style="background-color: #ffffff; padding: 20px; border-radius: 8px;">
+            <h3 class="text-info">Dataset Generation</h3>
+            <p>The dataset used for training the models was generated using Roboflow, a powerful tool for annotating images and creating datasets for computer vision tasks.</p>
+
+            <h3 class="text-info">YOLO Models</h3>
+            <p>Three <span class="text-success">YOLO</span> (You Only Look Once) models were used for object detection. YOLO is a state-of-the-art, real-time object detection system known for its speed and accuracy. It can detect multiple objects in an image simultaneously, making it highly efficient for complex detection tasks. The accuracy of the three models is approximately as follows:</p>
+            <ul>
+                <li>Model 1: <span class="text-danger">98%</span> for Columns, vessels, instruments, etc.</li>
+                <li>Model 2: <span class="text-danger">98%</span> for LMIs, Tags, PLCs, etc.</li>
+                <li>Model 3: <span class="text-danger">86%</span> for valves, reducers.</li>
+            </ul>
+
+            <h3 class="text-info">Model Segmentation</h3>
+            <p>The use of three different models was necessitated by the varying sizes of symbols (e.g., valves) within the images. Each detection model was tailored to a specific segmentation of the image, enhancing detection performance for differently sized objects.</p>
+
+            <h3 class="text-info">Line Detection</h3>
+            <p>For detecting lines, the images were processed using skeletonization and morphological operations. These techniques help in highlighting and extracting line structures from the images, achieving high detection accuracy. Skeletonization reduces the lines to a single-pixel width, while morphological operations enhance and isolate the lines for accurate detection.</p>
+
+            <h3 class="text-info">Classification of Valves</h3>
+            <p>A <span class="text-success">CNN</span> model is used to classify the detected valves with <span class="text-danger">90%</span> accuracy.</p>
+
+            <h3 class="text-info">Graph Generation</h3>
+            <p>The graphs are generated to visualize the detection and classification results.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

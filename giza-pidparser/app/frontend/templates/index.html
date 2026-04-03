@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid" style="margin-top: 40px; background-color: #e0e0e0; border-radius: 12px; padding: 20px;">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1 class="display-4 text-primary font-weight-bold">P & ID Parser</h1>
+            <h4 class="text-secondary font-weight-bold">Automated Digitisation of P&IDs</h4>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 30px;">
+        <div class="col-md-6 offset-md-3">
+            <h3 class="text-center text-primary font-weight-bold">Upload PDF</h3>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <form action="{% url 'uploadfile' %}" method="POST" enctype="multipart/form-data" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_file_name">File Name</label>
+                    {{ form.file_name }}
+                </div>
+                <div class="form-group">
+                    <label for="id_file">File</label>
+                    {{ form.file }}
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                <!-- Parse File button -->
+                {% if mydata %}
+                <button type="button" class="btn btn-success btn-block" style="margin-top: 10px;" onclick="parseFile()">Parse File</button>
+                {% endif %}
+            </form>
+            {% if mydata %}
+            <h3 class="text-center text-primary font-weight-bold" style="margin-top: 30px;">Uploaded Files</h3>
+            <table class="table table-bordered table-hover" style="margin-top: 20px;">
+                <thead class="thead-light">
+                    <tr>
+                        <th class="text-center">S.No</th>
+                        <th>File Name</th>
+                        <th>File</th>
+                        <th class="text-center">Delete</th>
+                        <th class="text-center">Detect</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in mydata %}
+                    <tr>
+                        <td class="text-center">{{ forloop.counter }}</td>
+                        <td>{{ data.file_name }}</td>
+                        <td><a href="{{ data.my_file.url }}">{{ data.my_file }}</a></td>
+                        <td class="text-center">
+                            <a href="{% url 'deleteFile' data.id %}" class="btn btn-danger btn-sm">Delete</a>
+                        </td>
+                        <td class="text-center">
+                            <form action="{% url 'detect_components' %}" method="POST" onsubmit="startDetection()">
+                                {% csrf_token %}
+                                <input type="hidden" name="file_path" value="{{ data.my_file.path }}">
+                                <button type="submit" class="btn btn-success btn-sm">Detect</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div id="loadingModal" style="display: none;">
+    <div class="modal-content">
+        <div class="spinner"></div>
+        <p id="loadingText">Initializing...</p>
+    </div>
+</div>
+
+<!-- Add some CSS for the modal and spinner -->
+<style>
+    #loadingModal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 12px; /* Rounded edges */
+        text-align: center;
+    }
+
+    .spinner {
+        border: 6px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 6px solid #0072C6; /* Color of the spinner */
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .text-primary {
+        color: #0072C6; /* Ensure text-primary color is updated */
+    }
+</style>
+
+<script>
+    function showLoadingModal() {
+        document.getElementById('loadingModal').style.display = 'flex';
+        
+        const messages = [
+            "Detecting components...",
+            "Detecting pipelines...",
+            "Detecting text...",
+            "Generating graph..."
+        ];
+
+        let messageIndex = 0;
+
+        function updateMessage() {
+            if (messageIndex < messages.length) {
+                document.getElementById('loadingText').innerText = messages[messageIndex];
+                messageIndex++;
+                setTimeout(updateMessage, 2000); // Change message every 2 seconds
+            }
+        }
+
+        updateMessage();
+    }
+
+    function hideLoadingModal() {
+        document.getElementById('loadingModal').style.display = 'none';
+    }
+
+    function startDetection() {
+        showLoadingModal();
+        // Let the modal and messages show up; form submission continues as usual
+    }
+
+    function parseFile() {
+        const forms = document.forms;
+        const lastForm = forms[forms.length - 1];
+        const filePath = lastForm.querySelector('input[name="file_path"]').value;
+
+        const form = document.createElement('form');
+        form.action = "{% url 'detect_components' %}";
+        form.method = "POST";
+
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = '{{ csrf_token }}';
+        form.appendChild(csrfInput);
+
+        const filePathInput = document.createElement('input');
+        filePathInput.type = 'hidden';
+        filePathInput.name = 'file_path';
+        filePathInput.value = filePath;
+        form.appendChild(filePathInput);
+
+        document.body.appendChild(form);
+        form.submit();
+
+        showLoadingModal();
+    }
+</script>
+{% endblock %}

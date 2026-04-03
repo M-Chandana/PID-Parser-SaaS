@@ -2,14 +2,15 @@
 
 This service provides a FastAPI wrapper for the P&ID detection and parsing logic.
 
-## Current Milestone: B1
+## Current Milestone: B1 - COMPLETED
 - [x] FastAPI Service Structure
 - [x] Health Check Endpoint (`/health`)
 - [x] Parsing Wrapper Endpoint (`/parse`)
-- [x] Pydantic Response Schemas
-- [x] Pipeline Logic Stubs (Ready for giza-pidparser integration)
+- [x] Pydantic Response Schemas (Expanded for Production)
+- [x] Pipeline Logic Implemented (giza-pidparser integration ready)
+- [x] YOLO Weight Auto-loading (fallback to CV contours)
 - [x] Dockerization
-- [x] AI Capability Parity Matrix
+- [x] AI Capability Parity Matrix Met (All 8 pipeline steps functional)
 
 ## Project Structure
 ```
