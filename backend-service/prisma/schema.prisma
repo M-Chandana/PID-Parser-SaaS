@@ -11,13 +11,22 @@ model User {
   id            String   @id @default(uuid())
   email         String   @unique
   passwordHash  String
-  planType      String   @default("free") // "free" or "paid"
+  planId        String   @default("free-plan-id")
+  plan          Plan     @relation(fields: [planId], references: [id])
   dailyUsage    Int      @default(0)
   monthlyUsage  Int      @default(0)
   lastResetDate DateTime @default(now()) // used to track when to reset counters
   jobs          Job[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model Plan {
+  id           String   @id @default(uuid())
+  name         String   @unique // "free", "paid"
+  maxDaily     Int      @default(5)
+  maxMonthly   Int      @default(150)
+  users        User[]
 }
 
 model Job {

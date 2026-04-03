@@ -16,7 +16,7 @@ pid_parser/
 # Node
 node_modules/
 backend-service/node_modules/
-
+backend-service/storage/
 # Zip/Unzipped
 *.zip
 giza-pidparser-unzipped/
