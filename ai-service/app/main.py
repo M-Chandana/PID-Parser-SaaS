@@ -85,12 +85,16 @@ async def health():
 # POST /parse
 # ==========================================================
 @app.post("/parse", response_model=ParserResponse)
-async def parse_pid(file: UploadFile = File(...)):
+async def parse_pid(request: Request, file: UploadFile = File(...)):
     """
     Upload a P&ID file (PDF, JPG, JPEG, PNG — max 5 MB).
-    Returns detection results, line classifications, graph data,
-    and paths to generated artifacts.
+    Requires a valid 'X-API-Key' for security.
     """
+    # --- Security: Check for API Key ---
+    api_key = request.headers.get("X-API-Key")
+    if api_key != settings.SECRET_API_KEY:
+        logger.warning(f"Unauthorized access attempt with key: {api_key}")
+        raise HTTPException(status_code=403, detail="Forbidden: Invalid API Key")
 
     # --- Validate file extension ---
     ext = os.path.splitext(file.filename or "")[1].lower()

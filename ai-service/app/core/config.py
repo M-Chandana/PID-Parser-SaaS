@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     # Graph generation
     LINE_SYMBOL_PROXIMITY_PX: int = 20  # max distance (px) for a line endpoint to "touch" a symbol
 
+    # Security (B3 Priority)
+    SECRET_API_KEY: str = "pid-parser-internal-secret-2026"
+
     class Config:
         env_file = ".env"
         extra = "ignore"
