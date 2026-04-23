@@ -74,7 +74,7 @@ router.post('/', authenticateToken, checkQuota, upload.single('file'), async (re
     }
 
     const userId = req.user.id;
-    const isFree = req.dbUser.planType === 'free';
+    const isFree = req.dbUser.plan && req.dbUser.plan.name === 'free';
     
     // Increment usage
     await prisma.user.update({
