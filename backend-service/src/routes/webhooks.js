@@ -11,20 +11,34 @@ router.post('/stripe', async (req, res) => {
   console.log(`Received webhook: ${eventType} for ${userEmail}`);
 
   try {
-    if (eventType === 'checkout.session.completed' || eventType === 'subscription.updated') {
-      const plan = await prisma.plan.findUnique({ where: { name: planName || 'paid' } });
-      
-      if (!plan) {
-        return res.status(404).json({ error: 'Plan not found' });
-      }
+    const supportedEvents = ['checkout.session.completed', 'subscription.updated'];
 
-      await prisma.user.update({
-        where: { email: userEmail },
-        data: { planId: plan.id }
-      });
-
-      console.log(`User ${userEmail} upgraded to ${plan.name} plan`);
+    if (!supportedEvents.includes(eventType)) {
+      return res.json({ received: true, ignored: true, reason: 'Unsupported event type' });
     }
+
+    if (!userEmail) {
+      return res.status(400).json({ error: 'Missing userEmail in webhook payload' });
+    }
+
+    const targetPlanName = planName || 'paid';
+    const plan = await prisma.plan.findUnique({ where: { name: targetPlanName } });
+
+    if (!plan) {
+      return res.status(404).json({ error: `Plan not found: ${targetPlanName}` });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: userEmail } });
+    if (!user) {
+      return res.status(404).json({ error: `User not found: ${userEmail}` });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { planId: plan.id }
+    });
+
+    console.log(`User ${userEmail} upgraded to ${plan.name} plan`);
 
     res.json({ received: true });
   } catch (error) {
