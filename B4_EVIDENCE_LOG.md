@@ -3,8 +3,6 @@
 Use this file to capture proof for B4 done criteria and signoff.
 
 ## Environment
-- Date: 2026-04-21
-- Operator: Copilot + Chandana
 - Branch: dev
 - Backend URL: http://127.0.0.1:5000
 - AI URL: http://127.0.0.1:8000

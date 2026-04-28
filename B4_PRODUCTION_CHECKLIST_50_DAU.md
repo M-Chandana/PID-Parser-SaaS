@@ -1,6 +1,6 @@
 # B4 Production Checklist (50 DAU Signoff)
 
-Date: 2026-04-21
+
 Branch: dev
 Scope: B4 Deploy + Hardening + Runbook
 
@@ -37,6 +37,4 @@ Scope: B4 Deploy + Hardening + Runbook
 - [x] Team can deploy and recover system using docs
 - [x] Production checklist for 50 DAU signed off
 
-Signed by:
-- Engineering (Intern B): Completed on 2026-04-21
-- Verification witness: Copilot session evidence
+
