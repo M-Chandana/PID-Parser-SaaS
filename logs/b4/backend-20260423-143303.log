@@ -14,3 +14,6 @@ Received webhook: checkout.session.completed for b4_webhook_1776935496@example.c
 User b4_webhook_1776935496@example.com upgraded to paid plan
 Received webhook: subscription.updated for b4_webhook_1776935496@example.com
 User b4_webhook_1776935496@example.com upgraded to paid plan
+[32m[nodemon] restarting child process[39m
+[32m[nodemon] starting `node src/index.js`[39m
+Backend API running on port 5000
