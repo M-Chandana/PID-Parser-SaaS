@@ -6,10 +6,11 @@ Endpoints:
   POST /parse   — Upload PDF/image, run full pipeline, return results
 """
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Request
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request, Security
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
+from fastapi.security import APIKeyHeader
 from app.schemas.parser import (
     ParserResponse, HealthResponse, Detection, LineDetection,
     GraphData, GraphNode, GraphEdge, GeometrySummary, JobStatus,
@@ -35,6 +36,9 @@ app = FastAPI(
     description="Wraps the giza-pidparser pipeline as a REST API",
     version="1.0.0",
 )
+
+# ---------- Security: API Key Header ----------
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 # CORS — allow frontend dev server
 app.add_middleware(
@@ -85,14 +89,15 @@ async def health():
 # POST /parse
 # ==========================================================
 @app.post("/parse", response_model=ParserResponse)
-async def parse_pid(request: Request, file: UploadFile = File(...)):
+async def parse_pid(request: Request, file: UploadFile = File(...), api_key: str = Security(api_key_header)):
     """
     Upload a P&ID file (PDF, JPG, JPEG, PNG — max 5 MB).
-    Requires a valid 'X-API-Key' for security.
+    Requires a valid 'X-API-Key' header for security.
+    
+    Security: Pass your API key in the X-API-Key header.
     """
     # --- Security: Check for API Key ---
-    api_key = request.headers.get("X-API-Key")
-    if api_key != settings.SECRET_API_KEY:
+    if not api_key or api_key != settings.SECRET_API_KEY:
         logger.warning(f"Unauthorized access attempt with key: {api_key}")
         raise HTTPException(status_code=403, detail="Forbidden: Invalid API Key")
 
