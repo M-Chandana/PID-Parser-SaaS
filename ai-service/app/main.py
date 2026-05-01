@@ -94,7 +94,12 @@ async def parse_pid(request: Request, file: UploadFile = File(...), api_key: str
     Upload a P&ID file (PDF, JPG, JPEG, PNG — max 5 MB).
     Requires a valid 'X-API-Key' header for security.
     
-    Security: Pass your API key in the X-API-Key header.
+    **API Key for Testing:** `pid-parser-internal-secret-2026`
+    
+    **How to test in Swagger:**
+    1. Click the Authorize button (lock icon) at the top
+    2. Paste the API key above
+    3. Click "Try it out" on this endpoint
     """
     # --- Security: Check for API Key ---
     if not api_key or api_key != settings.SECRET_API_KEY:
