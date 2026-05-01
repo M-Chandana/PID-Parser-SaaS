@@ -13,6 +13,12 @@ The `ai-service` folder has been thoroughly upgraded to production readiness. We
 4. **FastAPI Endpoints:** Upgraded endpoints in `main.py`. `/health` now tracks model availability and repo connectivity. `/parse` handles multi-model processing, result merging, and Pydantic validation (floats/tuple to int/list casting).
 5. **Robust Schema & Config:** Re-structured `app/schemas/parser.py` and implemented local environment-driven tuning defaults (`app/core/config.py`).
 
+### B1 Acceptance Verification and Closeout
+* Verified `PID-010.pdf` end to end through `/parse` after Poppler was added to the running server environment.
+* Response returned `status: completed` with populated `detections`, `line_detections`, `artifacts`, `graph_data`, and `geometry_summary`.
+* Artifact files were written under `ai-service/artifacts/{job_id}/` and served successfully over `/artifacts/{job_id}/...`.
+* Release branch `dev1` was created from `dev`, committed, pushed, and tagged `v1.0` for the B1 fix set.
+
 ## Milestone B2: Backend API + DB + Uploads (Completed)
 Constructed the Node.js/Express backend service to fulfill the shared platform requirements seamlessly with Intern A.
 
