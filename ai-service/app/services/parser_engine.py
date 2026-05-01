@@ -2,6 +2,7 @@ import os
 import sys
 import copy
 import logging
+import csv
 import numpy as np
 import cv2
 from typing import Dict, Any
@@ -76,12 +77,45 @@ class PIDParserEngine:
             # Combine all bounding boxes mathematically as done in their pipeline
             combined = final_bboxes1 + final_bboxes2 + final_bboxes3
             
-            # 4) Formatting the response exactly according to our Pydantic spec
+            # 4) Create artifact outputs in job-specific directory
+            # Ensure output_dir exists
+            os.makedirs(output_dir, exist_ok=True)
+            
+            # For B1, we generate placeholder artifacts in the job directory
+            # (Full visualization will be implemented in B2/B3)
+            model1_path = os.path.join(output_dir, "model_one.png")
+            model2_path = os.path.join(output_dir, "model_two.png")
+            model3_path = os.path.join(output_dir, "model_three.png")
+            csv_path = os.path.join(output_dir, "output.csv")
+            
+            # Save placeholder detection visualizations (job-isolated)
+            # For now, save a copy of the input image as placeholders
+            cv2.imwrite(model1_path, base_image)
+            cv2.imwrite(model2_path, base_image)
+            cv2.imwrite(model3_path, base_image)
+            
+            # Save detections as CSV (job-isolated)
+            try:
+                with open(csv_path, 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(['label', 'confidence', 'x1', 'y1', 'x2', 'y2'])
+                    for box in combined:
+                        writer.writerow([
+                            'component',
+                            float(box[4]),
+                            int(box[0]), int(box[1]),
+                            int(box[2]), int(box[3])
+                        ])
+            except Exception as csv_err:
+                logging.warning(f"Failed to write CSV: {csv_err}")
+            
+            # Return relative paths (relative to artifacts directory)
+            # These will be prefixed with job_id by main.py
             artifacts = {
-                "model1": "app/static/model_one.png",
-                "model2": "app/static/model_two.png",
-                "model3": "app/static/model_three.png",
-                "csv_output": "app/static/output.csv"
+                "model1": "model_one.png",
+                "model2": "model_two.png",
+                "model3": "model_three.png",
+                "csv_output": "output.csv"
             }
             
             return {
