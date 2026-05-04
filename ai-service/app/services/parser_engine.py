@@ -117,7 +117,65 @@ class PIDParserEngine:
                 "model3": "model_three.png",
                 "csv_output": "output.csv"
             }
-            
+
+            # Build line detections including both horizontal (dh) and vertical (dv)
+            line_list = []
+            for i in range(len(dh)):
+                try:
+                    start = [int(dh[i][0][0]), int(dh[i][0][1])]
+                    end = [int(dh[i][1][0]), int(dh[i][1][1])]
+                except Exception:
+                    continue
+                line_list.append({"start": start, "end": end, "line_type": "solid"})
+            for i in range(len(dv)):
+                try:
+                    start = [int(dv[i][0][0]), int(dv[i][0][1])]
+                    end = [int(dv[i][1][0]), int(dv[i][1][1])]
+                except Exception:
+                    continue
+                line_list.append({"start": start, "end": end, "line_type": "solid"})
+
+            # Build graph nodes from combined detections and edges from lines connecting nodes
+            nodes = []
+            for idx, box in enumerate(combined):
+                try:
+                    x1, y1, x2, y2 = [int(v) for v in box[:4]]
+                except Exception:
+                    continue
+                node = {"id": f"n{idx}", "label": "component", "bbox": [x1, y1, x2, y2]}
+                nodes.append(node)
+
+            # Precompute centers for distance comparisons
+            def center_of(bbox):
+                x1, y1, x2, y2 = bbox
+                return ((x1 + x2) / 2.0, (y1 + y2) / 2.0)
+
+            centers = [center_of(n["bbox"]) for n in nodes]
+
+            def nearest_node_idx(point):
+                import math
+                if not centers:
+                    return None
+                px, py = point
+                best = None
+                best_d = None
+                for i, (cx, cy) in enumerate(centers):
+                    d = math.hypot(px - cx, py - cy)
+                    if best_d is None or d < best_d:
+                        best_d = d
+                        best = i
+                return best
+
+            edges = []
+            for ln in line_list:
+                s = ln["start"]
+                e = ln["end"]
+                si = nearest_node_idx((s[0], s[1]))
+                ei = nearest_node_idx((e[0], e[1]))
+                if si is not None and ei is not None and si != ei:
+                    edge = {"source": nodes[si]["id"], "target": nodes[ei]["id"], "line_type": ln.get("line_type")}
+                    edges.append(edge)
+
             return {
                 "job_id": job_id,
                 "status": "completed",
@@ -129,16 +187,9 @@ class PIDParserEngine:
                     }
                     for box in combined
                 ],
-                "line_detections": [
-                    {
-                        "start": [int(dh[i][0][0]), int(dh[i][0][1])],
-                        "end":   [int(dh[i][1][0]), int(dh[i][1][1])],
-                        "line_type": "solid"
-                    }
-                    for i in range(len(dh))
-                ],
+                "line_detections": line_list,
                 "artifacts": artifacts,
-                "graph_data": {"nodes": [], "edges": []},  # Nodes mapped dynamically downstream
+                "graph_data": {"nodes": nodes, "edges": edges},
                 "geometry_summary": {
                     "total_lines": len(dh) + len(dv),
                     "solid_lines": len(dh) + len(dv),
