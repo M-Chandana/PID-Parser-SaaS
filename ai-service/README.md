@@ -51,6 +51,30 @@ ai-service/
 The API will be available at `http://localhost:8000`.
 Documentation: `http://localhost:8000/docs`.
 
+## Testing in Swagger UI
+
+The `/parse` endpoint requires API key authentication for security.
+
+### Steps to Test:
+1. Open `http://localhost:8000/docs` in your browser
+2. Click the **Authorize** button (🔒 icon) at the top right
+3. In the dialog, paste this API key:
+   ```
+   pid-parser-internal-secret-2026
+   ```
+4. Click "Authorize"
+5. Navigate to the `POST /parse` endpoint
+6. Click "Try it out"
+7. Upload a P&ID file (PDF, JPG, PNG)
+8. Click "Execute"
+
+The response will include:
+- `job_id`: Unique job identifier
+- `status`: "completed" if successful
+- `detections`: List of detected components
+- `artifacts`: Artifact file URLs (e.g., `/artifacts/{job_id}/model_one.png`)
+- `geometry_summary`: Line counts and contour analysis
+
 ### Docker
 ```bash
 docker build -t pid-parser-ai .
