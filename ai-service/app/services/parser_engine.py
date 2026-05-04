@@ -81,18 +81,37 @@ class PIDParserEngine:
             # Ensure output_dir exists
             os.makedirs(output_dir, exist_ok=True)
             
-            # For B1, we generate placeholder artifacts in the job directory
-            # (Full visualization will be implemented in B2/B3)
+            # Produce per-model overlay images (draw each model's boxes on the input)
             model1_path = os.path.join(output_dir, "model_one.png")
             model2_path = os.path.join(output_dir, "model_two.png")
             model3_path = os.path.join(output_dir, "model_three.png")
             csv_path = os.path.join(output_dir, "output.csv")
-            
-            # Save placeholder detection visualizations (job-isolated)
-            # For now, save a copy of the input image as placeholders
-            cv2.imwrite(model1_path, base_image)
-            cv2.imwrite(model2_path, base_image)
-            cv2.imwrite(model3_path, base_image)
+
+            # Draw boxes for each model onto copies so each artifact is truthful
+            def draw_boxes(image, boxes, color=(0, 0, 255)):
+                img = image.copy()
+                for box in boxes:
+                    try:
+                        x1, y1, x2, y2 = [int(v) for v in box[:4]]
+                    except Exception:
+                        continue
+                    cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+                return img
+
+            try:
+                model1_img = draw_boxes(base_image, final_bboxes1, color=(0, 0, 255))
+                model2_img = draw_boxes(base_image, final_bboxes2, color=(0, 255, 0))
+                model3_img = draw_boxes(base_image, final_bboxes3, color=(255, 0, 0))
+
+                cv2.imwrite(model1_path, model1_img)
+                cv2.imwrite(model2_path, model2_img)
+                cv2.imwrite(model3_path, model3_img)
+            except Exception as vis_err:
+                logging.warning(f"Failed to write model overlays: {vis_err}")
+                # Fallback: still write the base image to avoid missing files
+                cv2.imwrite(model1_path, base_image)
+                cv2.imwrite(model2_path, base_image)
+                cv2.imwrite(model3_path, base_image)
             
             # Save detections as CSV (job-isolated)
             try:
