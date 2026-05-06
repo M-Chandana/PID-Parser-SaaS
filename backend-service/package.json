@@ -7,17 +7,12 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "db:push": "npx prisma db push",
-    "db:studio": "npx prisma studio",
-    "worker": "node src/worker.js",
-    "b4:health": "node scripts/verify_b4_health.js",
-    "b4:webhook": "node scripts/verify_webhook_staging.js",
-    "b4:webhook-negative": "node scripts/verify_webhook_negative.js",
-    "b4:uptime": "node scripts/observe_uptime.js",
-    "b4:quota-reset": "node scripts/verify_quota_reset.js",
-    "b4:key-auth": "node scripts/verify_ai_key_auth.js"
+    "db:studio": "npx prisma studio"
   },
   "dependencies": {
     "@prisma/client": "^5.11.0",
+    "@aws-sdk/client-s3": "^3.500.0",
+    "stripe": "^12.0.0",
     "axios": "^1.14.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

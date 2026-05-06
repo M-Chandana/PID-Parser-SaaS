@@ -6,17 +6,10 @@ const fs = require('fs');
 const prisma = require('../db');
 const { authenticateToken } = require('../middlewares/auth');
 const { checkQuota } = require('../middlewares/quota');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
-// Multer config for file upload (Max 5MB)
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, process.env.STORAGE_DIR || './storage');
-  },
-  filename: (req, file, cb) => {
-    // Unique filename
-    cb(null, `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`);
-  }
-});
+// Multer config for file upload (Max 5MB) - use memory storage so we can optionally upload to S3
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
@@ -28,7 +21,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({ 
+const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter
@@ -85,17 +78,45 @@ router.post('/', authenticateToken, checkQuota, upload.single('file'), async (re
       }
     });
 
+    // Persist file either to S3 (if configured) or to local storage
+    let storedPath = null;
+    const storageDir = process.env.STORAGE_DIR || './storage';
+
+    if (process.env.S3_BUCKET && process.env.AWS_REGION) {
+      const s3 = new S3Client({ region: process.env.AWS_REGION });
+      const key = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(req.file.originalname)}`;
+      const params = {
+        Bucket: process.env.S3_BUCKET,
+        Key: key,
+        Body: req.file.buffer,
+        ContentType: req.file.mimetype
+      };
+      try {
+        await s3.send(new PutObjectCommand(params));
+        storedPath = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${encodeURIComponent(key)}`;
+      } catch (s3err) {
+        console.error('S3 upload error:', s3err);
+        return res.status(500).json({ error: 'Failed to store file in object storage' });
+      }
+    } else {
+      // Fallback to local storage
+      if (!fs.existsSync(storageDir)) fs.mkdirSync(storageDir, { recursive: true });
+      const filename = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(req.file.originalname)}`;
+      const filepath = path.join(storageDir, filename);
+      fs.writeFileSync(filepath, req.file.buffer);
+      storedPath = filepath;
+    }
+
     const job = await prisma.job.create({
       data: {
         userId,
         status: 'queued',
-        originalFile: req.file.path,
+        originalFile: storedPath,
         fileSize: req.file.size
       }
     });
 
-    // In an ideal B3 scenario, a worker process picks this up.
-    // For now, we return successfully. The worker will handle AI processing.
+    // The job is queued for later processing.
     res.status(201).json(job);
   } catch (error) {
     console.error('Upload error:', error);
