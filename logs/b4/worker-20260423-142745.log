@@ -1,6 +1,0 @@
-
-> pid-parser-backend@1.0.0 worker
-> node src/worker.js
-
-[Worker] B3 Pipeline Runner: Fully Secured Mode Started...
-[Worker] Storage Sandbox: C:\Users\chand\Downloads\PID_Parser_proj\backend-service\storage

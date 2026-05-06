@@ -94,8 +94,7 @@ router.post('/', authenticateToken, checkQuota, upload.single('file'), async (re
       }
     });
 
-    // In an ideal B3 scenario, a worker process picks this up.
-    // For now, we return successfully. The worker will handle AI processing.
+    // The job is queued for later processing.
     res.status(201).json(job);
   } catch (error) {
     console.error('Upload error:', error);
